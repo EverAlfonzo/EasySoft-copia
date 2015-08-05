@@ -62,7 +62,7 @@ public class jDncompra extends javax.swing.JDialog {
         db = con;
         setLocationRelativeTo(null);
         setTitle("Nueva Compra");
-        String titulos[] = {"Cod. Producto","Número de Fábrica","Código Original","Cantidad","Descripcion","Precio"};
+        String titulos[] = {"Cod. Producto","Número de Fábrica","Código Original","Descripcion","Cantidad" ,"Precio","Sub-Total"};
         m= (DefaultTableModel) jTProducto.getModel();
         m.setColumnIdentifiers(titulos);
         this.jTcantdisponible.setEditable(false);
@@ -728,7 +728,7 @@ public class jDncompra extends javax.swing.JDialog {
             jBRegCompra.setEnabled(true);
             r=null;
             r = db.Listar("*", "producto", "where Cod_inter_producto='"+prod.Lista[h][0]+"'");
-            String vec[]= new String[6];
+            String vec[]= new String[7];
             int hasta= jTProducto.getRowCount();
             System.out.println(String.valueOf(hasta));
             
@@ -752,10 +752,11 @@ public class jDncompra extends javax.swing.JDialog {
                     vec[0]= r.getString("Cod_inter_producto");
                     vec[1] = r.getString("Marca_Fabrica");
                     vec[2] = r.getString("Cod_Original");
-                    vec[3]= prod.Lista[h][1];
-                    vec[4]= r.getString("Nom_producto")+" "+r.getString("Marca_producto");
+                    vec[3]= r.getString("Nom_producto")+" "+r.getString("Marca_producto");
+                    vec[4]= prod.Lista[h][1];
                     precio = Integer.valueOf(prod.Lista[h][2])*Integer.valueOf(prod.Lista[h][1]);
-                    vec[5]= String.valueOf(precio);
+                    vec[5]= prod.Lista[h][2];
+                    vec[6]= String.valueOf(precio);
                     m.addRow(vec);
                     total = total + precio;
                     jTPrecTotal.setText(String.valueOf(total));
@@ -767,13 +768,13 @@ public class jDncompra extends javax.swing.JDialog {
                 try {
                     r.next();
                     
-                    String canactual = String.valueOf(jTProducto.getValueAt(indice,3));
+                    String canactual = String.valueOf(jTProducto.getValueAt(indice,4));
                     cantidad = Integer.valueOf(prod.Lista[h][1]) + Integer.valueOf (canactual);
                     precio = Integer.valueOf(r.getString(8)) * Integer.valueOf(prod.Lista[h][1]);
                     total=total+precio;
                     jTPrecTotal.setText(String.valueOf(total));
-                    jTProducto.setValueAt((Integer.valueOf(r.getString(8))*cantidad),indice, 5);
-                    jTProducto.setValueAt(cantidad, indice, 3);
+                    jTProducto.setValueAt((Integer.valueOf(r.getString(8))*cantidad),indice, 6);
+                    jTProducto.setValueAt(cantidad, indice, 4);
                     
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -808,7 +809,7 @@ public class jDncompra extends javax.swing.JDialog {
             jBRegCompra.setEnabled(true);
             r=null;
             r = db.Listar("*", "producto", "where Cod_inter_producto='"+String.valueOf(jCIdProducto.getSelectedItem())+"'");
-            String vec[]= new String[6];
+            String vec[]= new String[7];
             int hasta= jTProducto.getRowCount();
             System.out.println(String.valueOf(hasta));
             
@@ -832,10 +833,11 @@ public class jDncompra extends javax.swing.JDialog {
                     vec[0]= r.getString(1);
                     vec[1] = r.getString(2);
                     vec[2] = r.getString(3);
-                    vec[3]= jTCantidad.getText();
-                    vec[4]= r.getString(4)+" "+r.getString(5);
+                    vec[3]= r.getString(4)+" "+r.getString(5);
+                    vec[4]= jTCantidad.getText();
+                    vec[5]= r.getString(8);
                     precio = Integer.valueOf(r.getString(8))*Integer.valueOf(jTCantidad.getText());
-                    vec[5]= String.valueOf(precio);
+                    vec[6]= String.valueOf(precio);
                     m.addRow(vec);
                     total = total + precio;
                     jTPrecTotal.setText(String.valueOf(total));
@@ -847,13 +849,13 @@ public class jDncompra extends javax.swing.JDialog {
                 try {
                     r.next();
                     
-                    String canactual = String.valueOf(jTProducto.getValueAt(indice,3));
+                    String canactual = String.valueOf(jTProducto.getValueAt(indice,4));
                     cantidad = Integer.valueOf(jTCantidad.getText()) + Integer.valueOf (canactual);
                     precio = Integer.valueOf(r.getString(8)) * Integer.valueOf(jTCantidad.getText());
                     total=total+precio;
                     jTPrecTotal.setText(String.valueOf(total));
-                    jTProducto.setValueAt((Integer.valueOf(r.getString(8))*cantidad),indice, 5);
-                    jTProducto.setValueAt(cantidad, indice, 3);
+                    jTProducto.setValueAt((Integer.valueOf(r.getString(8))*cantidad),indice, 6);
+                    jTProducto.setValueAt(cantidad, indice, 4);
                     
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(null, "Error2");
@@ -914,7 +916,7 @@ public class jDncompra extends javax.swing.JDialog {
             
             Integer cant_producto=0;
             try {
-                Integer cant= Integer.valueOf(String.valueOf(jTProducto.getValueAt(j, 3)));
+                Integer cant= Integer.valueOf(String.valueOf(jTProducto.getValueAt(j, 4)));
                 resultado.next();
                 cant_producto = Integer.valueOf(resultado.getString("Cant_producto"));
                 cant_producto= (cant_producto)+(cant);
@@ -930,7 +932,7 @@ public class jDncompra extends javax.swing.JDialog {
                 boolean exito = false;
                 if(db.Altas("compra","", "('"+jTNumCompra.getText()+"','"+jtnumreceptor.getText()+"','"+provee+"','"+(a.getYear()+1900)+"/"+(a.getMonth()+1)+"/"+a.getDate()+"','"+jFTFactura.getText()+"','"+(String) jComboBox1.getSelectedItem()+"','"+jTextArea1.getText()+"')")){
                     for(int j=0; j<filas; j++){
-                        if(db.Altas("detalle_compra", "", "('"+jTNumCompra.getText()+"','"+jTProducto.getValueAt(j, 0)+"','"+ jTProducto.getValueAt(j, 3)+"','"+jTProducto.getValueAt(j, 5) +"')")){
+                        if(db.Altas("detalle_compra", "", "('"+jTNumCompra.getText()+"','"+jTProducto.getValueAt(j, 0)+"','"+ jTProducto.getValueAt(j, 4)+"','"+jTProducto.getValueAt(j, 5) +"')")){
                             exito= true;
                         }else{
                             exito = false;
